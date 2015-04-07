@@ -1,6 +1,7 @@
 <?php
 //IMathAS:  Checks user's login - prompts if none. 
 //(c) 2006 David Lippman
+
  header('P3P: CP="ALL CUR ADM OUR"');
  
  $curdir = rtrim(dirname(__FILE__), '/\\');
@@ -9,25 +10,15 @@
  }
  require_once("$curdir/config.php");
  require("i18n/i18n.php");
- if (isset($sessionpath) && $sessionpath!='') { session_save_path($sessionpath);}
- ini_set('session.gc_maxlifetime',86400);
- ini_set('auto_detect_line_endings',true);
- 
- if ($_SERVER['HTTP_HOST'] != 'localhost') {
- 	 session_set_cookie_params(0, '/', '.'.implode('.',array_slice(explode('.',$_SERVER['HTTP_HOST']),isset($CFG['GEN']['domainlevel'])?$CFG['GEN']['domainlevel']:-2)));
- }
+ require_once("includes/utils.php");
+
+ $sessionid = utils_start_session();
+ $urlmode = utils_detect_url_scheme();
+
  if (isset($CFG['GEN']['randfunc'])) {
  	 $randf = $CFG['GEN']['randfunc'];
  } else {
  	 $randf = 'rand';
- }
- 
- session_start();
- $sessionid = session_id();
- if((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']=='on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO']=='https'))  {
- 	 $urlmode = 'https://';
- } else {
- 	 $urlmode = 'http://';
  }
  
  $myrights = 0;

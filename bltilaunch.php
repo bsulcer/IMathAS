@@ -28,16 +28,14 @@
 
 header('P3P: CP="ALL CUR ADM OUR"');
 include("config.php");
+require_once("includes/utils.php");
+
 if (!get_magic_quotes_gpc()) {
 	$_REQUEST = array_map('addslashes_deep', $_REQUEST);
 }
 
 
- if((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']=='on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO']=='https'))  {
-	 $urlmode = 'https://';
- } else {
- 	 $urlmode = 'http://';
- }
+$urlmode = utils_detect_url_scheme();
 if ($enablebasiclti!=true) {
 	echo "BasicLTI not enabled";
 	exit;
@@ -52,14 +50,7 @@ function reporterror($err) {
 }
 
 //start session
-if (isset($sessionpath)) { session_save_path($sessionpath);}
-ini_set('session.gc_maxlifetime',86400);
-ini_set('auto_detect_line_endings',true);
-if ($_SERVER['HTTP_HOST'] != 'localhost') {
-	 session_set_cookie_params(0, '/', '.'.implode('.',array_slice(explode('.',$_SERVER['HTTP_HOST']),isset($CFG['GEN']['domainlevel'])?$CFG['GEN']['domainlevel']:-2)));
-}
-session_start();
-$sessionid = session_id();
+$sessionid = utils_start_session();
 $atstarthasltiuserid = isset($_SESSION['ltiuserid']);
 $askforuserinfo = false;
 

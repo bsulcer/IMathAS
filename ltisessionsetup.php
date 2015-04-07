@@ -1,10 +1,7 @@
 <?php
+require_once("includes/utils.php");
 header('P3P: CP="ALL CUR ADM OUR"');
-ini_set('session.gc_maxlifetime',86400);
-if ($_SERVER['HTTP_HOST'] != 'localhost') {
-	session_set_cookie_params(0, '/', '.'.implode('.',array_slice(explode('.',$_SERVER['HTTP_HOST']),isset($CFG['GEN']['domainlevel'])?$CFG['GEN']['domainlevel']:-2)));
-}
-session_start();
+utils_start_session();
 $redir = $_GET['redirect_url'];
 ?>
 <!DOCTYPE html>

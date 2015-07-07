@@ -24,10 +24,29 @@ function utils_start_session() {
 	return session_id();
 }
 
+function utils_clear_session() {
+	session_destroy();
+	session_start();
+	session_regenerate_id();
+	$sessionid = session_id();
+	$_SESSION = array();
+	setcookie(session_name(), session_id());
+}
+
 function utils_detect_url_scheme() {
 	if((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']=='on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO']=='https'))  {
 		return 'https://';
 	} else {
 		return 'http://';
+	}
+}
+
+function array_get($array, $key, $default = null) {
+	return isset($array[$key]) ? $array[$key] : $default;
+}
+
+function define_default($constant, $value) {
+	if (!defined($constant)) {
+		define($constant, $value);
 	}
 }

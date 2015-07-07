@@ -1,12 +1,14 @@
 <?php
-require_once('../config_real.php');
+require_once(__DIR__ . '/../config_local.php');
 
 function db_get_connection() {
-    if (!array_has_key('link', $GLOBALS)) {
+    global $dbserver, $dbname, $dbusername, $dbpassword;
+    if (!array_key_exists('link', $GLOBALS)) {
         $dsn = "mysql:host={$dbserver};dbname={$dbname}";
         try {
-            global $dbh = new PDO($dsn, $dbusername, $dbpassword);
-            $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            global $link;
+            $link = new PDO($dsn, $dbusername, $dbpassword);
+            $link->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }
         catch (PDOException $e) {
             die('Database connection failed: ' . $e->getMessage());
@@ -27,7 +29,7 @@ function db_query_scalar($query, $params = null) {
 			$sth->execute($params);
 		}
 		$row = $sth->fetch();
-		$sth->close();
+		$sth->closeCursor();
 		if ($row === false) {
 			return null;
 		}
@@ -36,7 +38,7 @@ function db_query_scalar($query, $params = null) {
 		}
 	}
 	catch (PDOException $e) {
-		die('Database query failed: ' $e->getMessage());
+		die('Database query failed: ' . $e->getMessage());
 	}
 }
 
@@ -52,7 +54,7 @@ function db_query_one($query, $params = null) {
 			$sth->execute($params);
 		}
 		$row = $sth->fetch();
-		$sth->close();
+		$sth->closeCursor();
 		if ($row === false) {
 			return null;
 		}
@@ -61,7 +63,7 @@ function db_query_one($query, $params = null) {
 		}
 	}
 	catch (PDOException $e) {
-		die('Database query failed: ' $e->getMessage());
+		die('Database query failed: ' . $e->getMessage());
 	}
 }
 
@@ -77,11 +79,11 @@ function db_query_all($query, $params = null) {
 			$sth->execute($params);
 		}
 		$rows = $sth->fetchAll();
-		$sth->close();
+		$sth->closeCursor();
 		return $rows;
 	}
 	catch (PDOException $e) {
-		die('Database query failed: ' $e->getMessage());
+		die('Database query failed: ' . $e->getMessage());
 	}
 }
 
@@ -96,12 +98,12 @@ function db_insert($query, $params = null) {
 		else {
 			$sth->execute($params);
 		}
-		$insertId = $dbh->lastInsertId;
-		$sth->close();
+		$insertId = $dbh->lastInsertId();
+		$sth->closeCursor();
 		return $insertId;
 	}
 	catch (PDOException $e) {
-		die('Database query failed: ' $e->getMessage());
+		die('Database query failed: ' . $e->getMessage());
 	}
 }
 
@@ -116,11 +118,11 @@ function db_update($query, $params = null) {
 		else {
 			$sth->execute($params);
 		}
-		$rowCount = $sth->rowCount;
-		$sth->close();
+		$rowCount = $sth->rowCount();
+		$sth->closeCursor();
 		return $rowCount;
 	}
 	catch (PDOException $e) {
-		die('Database query failed: ' $e->getMessage());
+		die('Database query failed: ' . $e->getMessage());
 	}
 }

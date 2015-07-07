@@ -1,11 +1,11 @@
 <?php
 //Config writer for IMathAS
-if (file_exists("config.php")) {
-	echo "<html><body>config.php already exists.  Aborting.  To reinstall, delete existing config.php</body></html>";
+if (file_exists("config_local.php")) {
+	echo "<html><body>config_local.php already exists.  Aborting.  To reinstall, delete existing config_local.php</body></html>";
 	exit;
 }
 if (isset($_POST['dbserver'])) {
-	
+
 	$contents = "<?php
 //IMathAS Math Config File.  Adjust settings here!
 
@@ -73,13 +73,13 @@ if ($pass) {
 
 ";
 }
-	
+
 if ($_POST['mathchaturl']==0) {
-	$contents .= "//Math chat disabled \n//\$mathchaturl = \"\$imasroot/mathchat/index.php\";\n\n";	
+	$contents .= "//Math chat disabled \n//\$mathchaturl = \"\$imasroot/mathchat/index.php\";\n\n";
 } else if ($_POST['mathchaturl']==1) {
-	$contents .= "//Math chat enabled \n\$mathchaturl = \"\$imasroot/mathchat/index.php\";\n\n";	
+	$contents .= "//Math chat enabled \n\$mathchaturl = \"\$imasroot/mathchat/index.php\";\n\n";
 } else if ($_POST['mathchaturl']==2) {
-	$contents .= "//Math chat enabled \n\$mathchaturl = \"{$_POST['mathchaturlurl']}\";\n\n";	
+	$contents .= "//Math chat enabled \n\$mathchaturl = \"{$_POST['mathchaturlurl']}\";\n\n";
 }
 
 if (!empty($_POST['sessionpath'])) {
@@ -99,36 +99,14 @@ if (!empty($_POST['AWSkey']) && !empty($_POST['AWSsecret']) && !empty($_POST['AW
 //\$AWSsecret = \"{$_POST['AWSsecret']}\";\n
 //\$AWSbucket = \"{$_POST['AWSbucket']}\";\n\n";
 }
-	
+
 $contents .= '
 //Uncomment to change the default course theme, also used on the home & admin page:
 //$defaultcoursetheme = "default.css"
 
 //To change loginpage based on domain/url/etc, define $loginpage here
-
-//no need to change anything from here on
-  /* Connecting, selecting database */
-  if (!isset($dbsetup)) {
-	 $link = mysql_connect($dbserver,$dbusername, $dbpassword) 
-	  or die("<p>Could not connect : " . mysql_error() . "</p></div></body></html>");
-	 mysql_select_db($dbname) 
-	  or die("<p>Could not select database</p></div></body></html>");
-	  
-	  unset($dbserver);
-	  unset($dbusername);
-	  unset($dbpassword);
-  }
-  //clean up post and get if magic quotes aren\'t on
-  function addslashes_deep($value) {
-	return (is_array($value) ? array_map(\'addslashes_deep\', $value) : addslashes($value));
-  }
-  if (!get_magic_quotes_gpc()) {
-   $_GET    = array_map(\'addslashes_deep\', $_GET);
-   $_POST  = array_map(\'addslashes_deep\', $_POST);
-   $_COOKIE = array_map(\'addslashes_deep\', $_COOKIE);
-  } 
-?>';
-$file = fopen('config.php','w');
+';
+$file = fopen('config_local.php','w');
 $f =  fwrite($file,$contents);
 fclose($file);
 ?>
@@ -136,9 +114,9 @@ fclose($file);
 <body>
 <?php
 if ($f!==false) {
-	echo "config.php written.<br/>";
+	echo "config_local.php written.<br/>";
 } else {
-	echo "error writing config!  Copy config.php.dist to config.php and edit manually.<br/>";
+	echo "error writing config!  Copy config_local.php.dist to config_local.php and edit manually.<br/>";
 }
 
 $c1 = chmod('assessment/libs',0755);
@@ -172,7 +150,7 @@ if ($c6 && $c7 && $c8) {
 </body>
 </html>
 <?php
-	
+
 } else {
 ?>
 <html>
@@ -185,7 +163,7 @@ p {
 	margin: 5px;
 }
 p.imp {
-	background: #fcc;	
+	background: #fcc;
 }
 </style>
 <title>IMathAS Install</title>
@@ -258,7 +236,7 @@ Login format.<br/>
 </p>
 
 <p>
-Require new users to respond to an email to verify their account before allowing 
+Require new users to respond to an email to verify their account before allowing
 them to log in?<br/>
 <input type="radio" name="emailconfirmation" value="true"/>Yes<br/>
 <input type="radio" name="emailconfirmation" value="false" checked="checked" />No
@@ -285,7 +263,7 @@ subdirectory.<br/>
 </p>
 
 <p>
-Absolute path or full url to Mimetex CGI, for math image fallback.  If you cannot install it 
+Absolute path or full url to Mimetex CGI, for math image fallback.  If you cannot install it
 on your local installation, you can use the default public server.<br/>
 <input type="text" name="mathimgurl" size="80" value="http://www.imathas.com/cgi-bin/mimetex.cgi" />
 </p>
@@ -306,15 +284,15 @@ Enable use of IMathAS as a BasicLTI producer?<br/>
 </p>
 
 <p>
-Should non-admins be allowed to create open-to-all libraries? On a single-school 
-install, set to yes; for larger installs that plan to use the Instructor Groups features, 
+Should non-admins be allowed to create open-to-all libraries? On a single-school
+install, set to yes; for larger installs that plan to use the Instructor Groups features,
 set to no<br/>
 <input type="radio" name="allownongrouplibs" value="true"  /> Yes<br/>
 <input type="radio" name="allownongrouplibs" value="false" checked="checked" /> No
 </p>
 
 <p>
-Should anyone be allowed to import/export questions and libraries from the 
+Should anyone be allowed to import/export questions and libraries from the
 course page?  Intended for easy sharing between systems, but the course page
 is cleaner if turned off.<br/>
 <input type="radio" name="allowcourseimport" value="true"  /> Yes<br/>
@@ -336,7 +314,7 @@ change it when you need to install a macro file.<br/>
 
 <p>
 Set PHP session path away from default.  Leave blank to use default, or provide
-an absolute file system path. 
+an absolute file system path.
 Changing is usually not necessary unless your site is on a server farm, or
 you're on a shared server and want more security of session data.
 Make sure this directory has write access by the server process.
@@ -359,6 +337,6 @@ Amazon S3 Bucket:<input type="text" name="AWSbucket" value=""/><br/>
 <input type="reset" value="Reset Defaults"/>
 </form>
 
-<?php	
+<?php
 }
 ?>

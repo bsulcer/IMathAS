@@ -31,7 +31,7 @@ if (isset($useeqnhelper) && ($useeqnhelper==1 || $useeqnhelper==2)) {
 if ((isset($testsettings) && $testsettings['showtips']==2) || (isset($showtips) && $showtips==2)) {
 	echo '<div id="ehdd" class="ehdd"><span id="ehddtext"></span> <span onclick="showeh(curehdd);" style="cursor:pointer;">[more..]</span></div>';
 	echo '<div id="eh" class="eh"></div>';
-	
+
 }
 if (isset($placeinfooter)) {
 	echo $placeinfooter;
@@ -40,12 +40,4 @@ if (isset($placeinfooter)) {
 </body>
 </html>
 <?php
-if (isset($link)) {
-	mysql_close($link);
-}
-/*
-$end_time = microtime(true);
-$exectime = $end_time - $start_time;
-echo "Executed in $exectime sec";
-*/
-?>
+require('includes/quit_legacy_mysql.php');

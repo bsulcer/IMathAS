@@ -40,7 +40,7 @@ function sendOAuthBodyPOST($method, $endpoint, $oauth_consumer_key, $oauth_consu
     $response = @stream_get_contents($fp);
     if ($response === false) {
     	echo "Error setting score in LMS";
-    	return false;    
+    	return false;
         //throw new Exception("Problem reading data from $endpoint, $php_errormsg");
     }
     return $response;
@@ -119,25 +119,30 @@ function sendOAuthBodyPOST($method, $endpoint, $oauth_consumer_key, $oauth_consu
 
     $header = $acc_req->to_header();
     $header = $header . "\r\nContent-Type: " . $content_type . "\r\n";
-    
+
     $disabled = explode(', ', ini_get('disable_functions'));
     if (function_exists('exec') && !in_array('exec', $disabled)) {
 	    try {
-		$cmd = "curl -X POST";
+		$cmd = "/usr/bin/curl -v -X POST";
 		$headers = explode("\r\n",$header);
 		foreach ($headers as $hdr) {
 			if (strlen($hdr)<2) {continue;}
 			$cmd .= " -H '$hdr'";
 		}
 		$cmd .= " -d '" . str_replace("'","\\'",$body) . "' " . "'" . $endpoint . "'";
-		$cmd .= " > /dev/null 2>&1 &";
-		@exec($cmd, $output, $exit);
-		return ($exit == 0);	    
+		$cmd .= " 2>&1";
+		$output = array();
+		exec($cmd, $output, $exit);
+        if ($exit != 0) {
+            error_log("error when invoking curl: {$cmd}; " . implode(' / ', $output));
+        }
+		return ($exit == 0);
 	    } catch (Exception $e) {
+	      error_log('external curl failed');
 		//continue below
 	    }
     }
-    
+
     $response = post_socket_xml($endpoint,$body,$header);
     if ( $response !== false && strlen($response) > 0) return $response;
 
@@ -165,6 +170,7 @@ function sendOAuthBodyPOST($method, $endpoint, $oauth_consumer_key, $oauth_consu
     	if ($sessiondata['debugmode']==true) {
     		throw new Exception("Problem reading data from $endpoint, $php_errormsg");
     	} else {
+	  error_log("Unable to update score via LTI.");
     		//echo "Unable to update score via LTI.";
     	}
     }
@@ -221,7 +227,7 @@ function calcandupdateLTIgrade($sourcedid,$aid,$scores) {
 				$aitemcnt[$k] = 1;
 			}
 		}
-		
+
 		$query = "SELECT points,id FROM imas_questions WHERE assessmentid='$aid'";
 		$result2 = mysql_query($query) or die("Query failed : $query: " . mysql_error());
 		$totalpossible = 0;
@@ -247,9 +253,9 @@ function calcandupdateLTIgrade($sourcedid,$aid,$scores) {
 //use this if we know the grade, or want to delete
 function updateLTIgrade($action,$sourcedid,$aid,$grade=0) {
 	global $sessiondata,$testsettings,$cid;
-	
+
 	list($lti_sourcedid,$ltiurl,$ltikey,$keytype) = explode(':|:',$sourcedid);
-	
+
 	if (strlen($lti_sourcedid)>1 && strlen($ltiurl)>1 && strlen($ltikey)>1) {
 		if (isset($sessiondata[$ltikey.'-'.$aid.'-secret'])) {
 			$secret = $sessiondata[$ltikey.'-'.$aid.'-secret'];
@@ -319,20 +325,20 @@ function updateLTIgrade($action,$sourcedid,$aid,$grade=0) {
 }
 
 function sendLTIOutcome($action,$key,$secret,$url,$sourcedid,$grade=0) {
-		
+
 	$method="POST";
 	$content_type = "application/xml";
-	
-	$body = '<?xml version = "1.0" encoding = "UTF-8"?>  
-	<imsx_POXEnvelopeRequest xmlns = "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">      
-		<imsx_POXHeader>         
-			<imsx_POXRequestHeaderInfo>            
-				<imsx_version>V1.0</imsx_version>  
-				<imsx_messageIdentifier>MESSAGE</imsx_messageIdentifier>         
-			</imsx_POXRequestHeaderInfo>      
-		</imsx_POXHeader>      
-		<imsx_POXBody>         
-			<OPERATION>            
+
+	$body = '<?xml version = "1.0" encoding = "UTF-8"?>
+	<imsx_POXEnvelopeRequest xmlns = "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
+		<imsx_POXHeader>
+			<imsx_POXRequestHeaderInfo>
+				<imsx_version>V1.0</imsx_version>
+				<imsx_messageIdentifier>MESSAGE</imsx_messageIdentifier>
+			</imsx_POXRequestHeaderInfo>
+		</imsx_POXHeader>
+		<imsx_POXBody>
+			<OPERATION>
 				<resultRecord>
 					<sourcedGUID>
 						<sourcedId>SOURCEDID</sourcedId>
@@ -342,53 +348,55 @@ function sendLTIOutcome($action,$key,$secret,$url,$sourcedid,$grade=0) {
 							<language>en-us</language>
 							<textString>GRADE</textString>
 						</resultScore>
+						<resultData>
+							<text>text data for canvas submission</text>
+						</resultData>
 					</result>
-				</resultRecord>       
-			</OPERATION>      
-		</imsx_POXBody>   
+				</resultRecord>
+			</OPERATION>
+		</imsx_POXBody>
 	</imsx_POXEnvelopeRequest>';
-	
-	$shortBody = '<?xml version = "1.0" encoding = "UTF-8"?>  
-	<imsx_POXEnvelopeRequest xmlns = "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">      
-		<imsx_POXHeader>         
-			<imsx_POXRequestHeaderInfo>            
-				<imsx_version>V1.0</imsx_version>  
-				<imsx_messageIdentifier>MESSAGE</imsx_messageIdentifier>         
-			</imsx_POXRequestHeaderInfo>      
-		</imsx_POXHeader>      
-		<imsx_POXBody>         
-			<OPERATION>            
+
+	$shortBody = '<?xml version = "1.0" encoding = "UTF-8"?>
+	<imsx_POXEnvelopeRequest xmlns = "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
+		<imsx_POXHeader>
+			<imsx_POXRequestHeaderInfo>
+				<imsx_version>V1.0</imsx_version>
+				<imsx_messageIdentifier>MESSAGE</imsx_messageIdentifier>
+			</imsx_POXRequestHeaderInfo>
+		</imsx_POXHeader>
+		<imsx_POXBody>
+			<OPERATION>
 				<resultRecord>
 					<sourcedGUID>
 						<sourcedId>SOURCEDID</sourcedId>
 					</sourcedGUID>
-				</resultRecord>       
-			</OPERATION>      
-		</imsx_POXBody>   
+				</resultRecord>
+			</OPERATION>
+		</imsx_POXBody>
 	</imsx_POXEnvelopeRequest>';
-	
+
 	if ($action=='update') {
 	    $operation = 'replaceResultRequest';
 	    $postBody = str_replace(
-		array('SOURCEDID', 'GRADE', 'OPERATION','MESSAGE'), 
-		array($sourcedid, $grade, $operation, uniqid()), 
+		array('SOURCEDID', 'GRADE', 'OPERATION','MESSAGE'),
+		array($sourcedid, $grade, $operation, uniqid()),
 		$body);
 	} else if ($action=='read') {
 	    $operation = 'readResultRequest';
 	    $postBody = str_replace(
-		array('SOURCEDID', 'OPERATION','MESSAGE'), 
-		array($sourcedid, $operation, uniqid()), 
+		array('SOURCEDID', 'OPERATION','MESSAGE'),
+		array($sourcedid, $operation, uniqid()),
 		$shortBody);
 	} else if ($action=='delete') {
 	    $operation = 'deleteResultRequest';
 	    $postBody = str_replace(
-		array('SOURCEDID', 'OPERATION','MESSAGE'), 
-		array($sourcedid, $operation, uniqid()), 
+		array('SOURCEDID', 'OPERATION','MESSAGE'),
+		array($sourcedid, $operation, uniqid()),
 		$shortBody);
 	} else {
 	    return false;
 	}
-	
 	$response = sendOAuthBodyPOST($method, $url, $key, $secret, $content_type, $postBody);
 	return $response;
 }

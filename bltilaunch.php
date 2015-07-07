@@ -1,4 +1,8 @@
 <?php
+if (array_key_exists('custom_carnegiehub_user_id', $_REQUEST)) {
+	require('cflti/launch.php');
+	exit();
+}
 //IMathAS:  BasicLTI Producer Code
 //(c) David Lippman 2009
 //

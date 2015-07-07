@@ -40,4 +40,4 @@ if (isset($placeinfooter)) {
 </body>
 </html>
 <?php
-require('includes/quit_legacy_mysql.php');
+require(__DIR__ . '/includes/exit_legacy_mysql.php');

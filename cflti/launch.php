@@ -250,6 +250,12 @@ else if (isset($_SESSION['ltiuserid']) && !isset($_REQUEST['oauth_consumer_key']
 	//not postback of new LTI user info, so must be fresh request
 	//verify necessary POST values for LTI.  OAuth specific will be checked later
     // NOTE: could probably use standard lis_*_sourcedid fields instead of custom
+    // Adjust for Canvas test student use
+    if (array_get($_REQUEST, 'lis_person_name_given', '') == 'Test' &&
+        array_get($_REQUEST, 'lis_person_name_family', '') == 'Student') {
+        $_REQUEST['lis_person_contact_email_primary'] = 'teststudent@example.com';
+        $_REQUEST['custom_carnegiehub_user_id'] = '__teststudent__';
+    }
 	$required_lti_params = array('user_id', 'context_id', 'roles',
 		'oauth_consumer_key', 'lis_person_name_given',
 		'lis_person_name_family', 'lis_person_contact_email_primary',

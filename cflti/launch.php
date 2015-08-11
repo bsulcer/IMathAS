@@ -325,8 +325,8 @@ else if (isset($_SESSION['ltiuserid']) && !isset($_REQUEST['oauth_consumer_key']
 	//if we got this far, secret has already been verified
 	$_SESSION['ltiuserid'] = $ltiuserid;
 	$_SESSION['ltiorg'] = $ltiorg;
-	$ltirole = strtolower($_REQUEST['roles']);
-	if (strpos($ltirole, 'instructor') !== false || strpos($ltirole, 'administrator') !== false) {
+	$ltirole = str_replace('_', '', strtolower($_REQUEST['roles']));
+	if (strpos($ltirole, 'instructor') !== false || strpos($ltirole, 'administrator') !== false || strpos($ltirole, 'contentdeveloper') !== false) {
 		$ltirole = 'instructor';
 	} else {
 		$ltirole = 'learner';

@@ -84,7 +84,7 @@ function find_or_create_user($sis_userid, $ltirole, $first_name, $last_name, $em
 		. 'WHERE SID = ?', array($username));
 	if (is_null($userid)) {
 		if ($ltirole == 'instructor') {
-			$rights = utils_get_cfg('LTI', 'instrrights', 40);
+			$rights = 20;
 		}
 		else {
 			$rights = 10;
